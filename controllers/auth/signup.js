@@ -1,6 +1,8 @@
 const { UserModel, JoiUserSchema } = require("../../models/user");
 const bcrypt = require("bcrypt");
 const gravatar = require("gravatar");
+const { nanoid } = require("nanoid");
+const sendgrid = require("../../utils/sendgrid");
 
 const signup = async (req, res, next) => {
   try {
@@ -21,8 +23,17 @@ const signup = async (req, res, next) => {
 
     const salt = bcrypt.genSaltSync(10);
     const passwordToSave = bcrypt.hashSync(password, salt);
+    const token = nanoid();
 
-    await UserModel.create({ email, password: passwordToSave, avatarURL });
+    await UserModel.create({
+      email,
+      password: passwordToSave,
+      avatarURL,
+      verificationToken: token,
+    });
+
+    sendgrid(email, `http://localhost:3000/api/users/verify/${token}`);
+
     return res.status(201).json({
       user: {
         email,

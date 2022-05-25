@@ -16,9 +16,9 @@ const login = async (req, res, next) => {
 
     const result = await UserModel.findOne({ email });
 
-    if (!result)
+    if (!result || !result.verify)
       return res.status(401).json({
-        message: "Email or password is wrong",
+        message: "Email/password is wrong or unauthorized",
       });
 
     const comparePasswords = bcrypt.compareSync(password, result.password);
